@@ -1,5 +1,5 @@
 function optimalCluster = findOptimalCluster(originalImage, maxClusters, maxIter)
-    % Convertir la imagen a una matriz 2D y normalizar
+    % Convertir la imagen a una matriz de dos dimensiones y normalizar
     im2 = double(originalImage(:)) / 255;
 
     % Obtener el número de píxeles
@@ -8,6 +8,7 @@ function optimalCluster = findOptimalCluster(originalImage, maxClusters, maxIter
     distortions = zeros(1, maxClusters);
 
     for k = 1:maxClusters
+        % Se inicializan centroides de clústeres de manera aleatoria con ayuda de randperm 
         randIndices = randperm(pixelNo, k);
         centers = im2(randIndices);
 
@@ -19,35 +20,35 @@ function optimalCluster = findOptimalCluster(originalImage, maxClusters, maxIter
                 centers(j) = mean(im2(min_indices == j));
             end
         end
-
+        % La distorsión (suma de los cuadrados de las distancias mínimas al cuadrado) 
+        % se calcula y se almacena para evaluar la calidad del agrupamiento.
         distortions(k) = sum(min(D).^2) / pixelNo;
     end
 
-    % Plot the elbow curve
     figure;
     plot(1:maxClusters, distortions, 'o-');
     title('Método del Codo para encontrar el número óptimo de clústers');
     xlabel('Número de clústers');
     ylabel('Distorsión');
 
-    % 
+    
     disp(distortions);
-    [~, optimalCluster] = knee_pt_alternative(distortions(2:end));
+    [~, optimalCluster] = findKnee(distortions(2:end));
 
     fprintf('El número óptimo de clústers es: %d\n', optimalCluster);
-    optimalCluster = round(optimalCluster * 1000); % Multiplicar y dividir por 1000 para mostrar 3 decimales
+    optimalCluster = round(optimalCluster * 1000); 
     disp(optimalCluster);
 end
 
 % Encuentra el codo de los resultados con la primera derivada
-function [x, y] = knee_pt_alternative(x_vals)
+function [x, y] = findKnee(xValues)
 
-    dx = x_vals(2:end) - x_vals(1:end-1);
+    dx = xValues(2:end) - xValues(1:end-1);
     dy = diff(dx);
 
     % Punto con la mayor pendiente
     [~, idx] = max(dy); 
 
     x = idx + 1;  % Ajustar el índice para obtener el valor correcto en x_vals
-    y = x_vals(x);
+    y = xValues(x);
 end
